@@ -20,11 +20,13 @@ plugins {
 ### Local Development (composite build)
 
 In your mod's `settings.gradle`:
+
 ```groovy
 includeBuild '/path/to/zb-gradle-plugin'
 ```
 
 Then in `build.gradle`:
+
 ```groovy
 plugins {
     id 'io.github.zed-0xff.zb-gradle-plugin'
@@ -36,6 +38,7 @@ plugins {
 ### Generate Ed25519 Key
 
 Use homebrew openssl on macOS (system openssl doesn't support Ed25519):
+
 ```bash
 openssl genpkey -algorithm ed25519 -outform DER -out ~/.signing/ed25519-private.der
 ```
@@ -53,6 +56,7 @@ BUILD SUCCESSFUL in 1s
 ### Configure
 
 In `build.gradle`:
+
 ```groovy
 zbSigning {
     steamId = '76561198012345678'
@@ -61,6 +65,7 @@ zbSigning {
 ```
 
 Or in `~/.gradle/gradle.properties`:
+
 ```properties
 zbsSteamID64=76561198012345678
 zbsPrivateKeyFile=/Users/you/.signing/ed25519-private.der
@@ -68,12 +73,14 @@ zbsPrivateKeyFile=/Users/you/.signing/ed25519-private.der
 
 ### Options
 
-| Property | Description | Default |
-|----------|-------------|---------|
-| `steamId` | Steam ID (17 digits) | - |
-| `ed25519KeyFile` | Path to Ed25519 private key | - |
-| `jarTask` | Task to sign | `shadowJar` or `jar` |
-| `enabled` | Enable ZBS signing | `true` |
+
+| Property         | Description                 | Default              |
+| ---------------- | --------------------------- | -------------------- |
+| `steamId`        | Steam ID (17 digits)        | -                    |
+| `ed25519KeyFile` | Path to Ed25519 private key | -                    |
+| `jarTask`        | Task to sign                | `shadowJar` or `jar` |
+| `enabled`        | Enable ZBS signing          | `true`               |
+
 
 ## Tasks
 

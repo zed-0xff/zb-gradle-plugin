@@ -2,6 +2,7 @@ package me.zed_0xff.zb_gradle_plugin
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.logging.Logger
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo
 import org.bouncycastle.crypto.params.Ed25519PrivateKeyParameters
 import org.bouncycastle.crypto.signers.Ed25519Signer
@@ -28,9 +29,6 @@ import java.security.MessageDigest
  * 
  * Generate Ed25519 key (use homebrew openssl on macOS):
  *   openssl genpkey -algorithm ed25519 -outform DER -out ~/.signing/ed25519-private.der
- * 
- * Get public key for Steam profile:
- *   openssl pkey -in ~/.signing/ed25519-private.der -pubout -outform DER | tail -c 32 | xxd -p -c 32
  */
 class ZBSigningPlugin implements Plugin<Project> {
     
@@ -56,6 +54,7 @@ class ZBSigningPlugin implements Plugin<Project> {
     }
     
     private void configureZbsSigning(Project project, ZBSigningExtension ext, jarTask) {
+        // Capture all values at configuration time
         def steamId = ext.steamId.orNull ?: project.findProperty('zbsSteamID64')
         def keyFileProp = ext.ed25519KeyFile.orNull
         def keyPath = keyFileProp?.absolutePath ?: project.findProperty('zbsPrivateKeyFile')
@@ -65,7 +64,15 @@ class ZBSigningPlugin implements Plugin<Project> {
             return
         }
         
+        // Resolve key file at configuration time
+        def keyFile = keyPath ? project.file(keyPath) : null
+        
         project.logger.info("zb-signing: Configuring ZBS signing for '${jarTask.name}'")
+        
+        // Capture values for use in doLast (configuration cache compatible)
+        final String finalSteamId = steamId?.trim()
+        final File finalKeyFile = keyFile
+        final String finalKeyPath = keyPath
         
         def signTask = project.tasks.register('signJarZBS') {
             dependsOn jarTask
@@ -76,26 +83,21 @@ class ZBSigningPlugin implements Plugin<Project> {
             ))
             
             doLast {
-                def sid = ext.steamId.orNull ?: project.findProperty('zbsSteamID64')
-                if (!sid?.trim()) {
+                // Use captured values instead of accessing project
+                if (!finalSteamId) {
                     throw new org.gradle.api.GradleException(
                         'signJarZBS: set zbsSteamID64 (-PzbsSteamID64=) or zbSigning.steamId'
                     )
                 }
-                sid = sid.trim()
-                if (!(sid ==~ /^\d{17}$/)) {
+                if (!(finalSteamId ==~ /^\d{17}$/)) {
                     throw new org.gradle.api.GradleException(
-                        "signJarZBS: invalid SteamID64: ${sid}"
+                        "signJarZBS: invalid SteamID64: ${finalSteamId}"
                     )
                 }
                 
-                def kf = ext.ed25519KeyFile.orNull
-                def kp = kf?.absolutePath ?: project.findProperty('zbsPrivateKeyFile')
-                def keyFile = kp ? project.file(kp) : null
-                
-                if (!kp?.trim() || !keyFile?.isFile()) {
+                if (!finalKeyPath?.trim() || !finalKeyFile?.isFile()) {
                     throw new org.gradle.api.GradleException(
-                        "signJarZBS: missing Ed25519 PKCS#8 DER private key (${kp}).\n" +
+                        "signJarZBS: missing Ed25519 PKCS#8 DER private key (${finalKeyPath}).\n" +
                         'Generate with: openssl genpkey -algorithm ed25519 -outform DER -out ~/.signing/ed25519-private.der\n' +
                         '(on macOS use openssl from homebrew for Ed25519 support)\n' +
                         'Set via zbSigning.ed25519KeyFile or -PzbsPrivateKeyFile='
@@ -105,10 +107,10 @@ class ZBSigningPlugin implements Plugin<Project> {
                 def jarFile = jarTask.archiveFile.get().asFile
                 def jarShaHex = sha256Hex(jarFile)
                 
-                def canonical = "ZBS:${sid}:${jarShaHex}"
+                def canonical = "ZBS:${finalSteamId}:${jarShaHex}"
                 def messageBytes = canonical.getBytes(StandardCharsets.UTF_8)
                 
-                def pkcs8 = keyFile.bytes
+                def pkcs8 = finalKeyFile.bytes
                 try {
                     def pkInfo = PrivateKeyInfo.getInstance(pkcs8)
                     def asym = PrivateKeyFactory.createKey(pkInfo)
@@ -123,10 +125,10 @@ class ZBSigningPlugin implements Plugin<Project> {
                     
                     def outFile = new File(jarFile.parentFile, jarFile.name + '.zbs')
                     outFile.setText(
-                        "ZBS\nSteamID64:${sid}\nSignature:${sigHex}\n",
+                        "ZBS\nSteamID64:${finalSteamId}\nSignature:${sigHex}\n",
                         StandardCharsets.UTF_8.name()
                     )
-                    project.logger.lifecycle("Add to Steam profile: JavaModZBS:${pubHex}")
+                    logger.lifecycle("Add to Steam profile: JavaModZBS:${pubHex}")
                 } finally {
                     Arrays.fill(pkcs8, (byte) 0)
                 }
