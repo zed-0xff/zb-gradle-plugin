@@ -40,7 +40,15 @@ Use homebrew openssl on macOS (system openssl doesn't support Ed25519):
 openssl genpkey -algorithm ed25519 -outform DER -out ~/.signing/ed25519-private.der
 ```
 
-After first build, the plugin will print the string to add to your Steam profile summary.
+After build, the plugin prints the string to add to your Steam profile summary:
+
+```
+> Task :signJarZBS
+Add to Steam profile: JavaModZBS:cafebabe0123456789abcdef0123456789abcdef0123456789abcdef01234567
+
+BUILD SUCCESSFUL in 1s
+8 actionable tasks: 5 executed, 3 up-to-date
+```
 
 ### Configure
 

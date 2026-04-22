@@ -109,23 +109,27 @@ class ZBSigningPlugin implements Plugin<Project> {
                 def messageBytes = canonical.getBytes(StandardCharsets.UTF_8)
                 
                 def pkcs8 = keyFile.bytes
-                def pkInfo = PrivateKeyInfo.getInstance(pkcs8)
-                def asym = PrivateKeyFactory.createKey(pkInfo)
-                def priv = (Ed25519PrivateKeyParameters) asym
-                def pubHex = hexBytes(priv.generatePublicKey().getEncoded())
-                
-                def signer = new Ed25519Signer()
-                signer.init(true, priv)
-                signer.update(messageBytes, 0, messageBytes.length)
-                def sigBytes = signer.generateSignature()
-                def sigHex = hexBytes(sigBytes)
-                
-                def outFile = new File(jarFile.parentFile, jarFile.name + '.zbs')
-                outFile.setText(
-                    "ZBS\nSteamID64:${sid}\nSignature:${sigHex}\n",
-                    StandardCharsets.UTF_8.name()
-                )
-                println "(add JavaModZBS:${pubHex} to your Steam profile summary)"
+                try {
+                    def pkInfo = PrivateKeyInfo.getInstance(pkcs8)
+                    def asym = PrivateKeyFactory.createKey(pkInfo)
+                    def priv = (Ed25519PrivateKeyParameters) asym
+                    def pubHex = hexBytes(priv.generatePublicKey().getEncoded())
+                    
+                    def signer = new Ed25519Signer()
+                    signer.init(true, priv)
+                    signer.update(messageBytes, 0, messageBytes.length)
+                    def sigBytes = signer.generateSignature()
+                    def sigHex = hexBytes(sigBytes)
+                    
+                    def outFile = new File(jarFile.parentFile, jarFile.name + '.zbs')
+                    outFile.setText(
+                        "ZBS\nSteamID64:${sid}\nSignature:${sigHex}\n",
+                        StandardCharsets.UTF_8.name()
+                    )
+                    project.logger.lifecycle("Add to Steam profile: JavaModZBS:${pubHex}")
+                } finally {
+                    Arrays.fill(pkcs8, (byte) 0)
+                }
             }
         }
         
