@@ -86,6 +86,10 @@ zbsPrivateKeyFile=/Users/you/.signing/ed25519-private.der
 
 - `signJarZBS` - Creates `.zbs` signature file (runs after `jar`)
 
+## Related
+
+- [ZombieBuddy](https://github.com/zed-0xff/ZombieBuddy) - Java modding framework for Project Zomboid that verifies ZBS signatures
+
 ## License
 
 MIT
