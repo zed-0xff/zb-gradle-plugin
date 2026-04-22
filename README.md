@@ -13,7 +13,7 @@ Gradle plugin for ZBS signing (ZombieBuddy mod signature).
 
 ```groovy
 plugins {
-    id 'me.zed_0xff.zb-gradle-plugin' version '1.0.0'
+    id 'io.github.zed-0xff.zb-gradle-plugin' version '1.0.0'
 }
 ```
 
@@ -27,7 +27,7 @@ includeBuild '/path/to/zb-gradle-plugin'
 Then in `build.gradle`:
 ```groovy
 plugins {
-    id 'me.zed_0xff.zb-gradle-plugin'
+    id 'io.github.zed-0xff.zb-gradle-plugin'
 }
 ```
 

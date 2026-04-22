@@ -5,7 +5,7 @@ plugins {
     id("com.gradle.plugin-publish") version "1.2.1"
 }
 
-group = "me.zed-0xff"
+group = "io.github.zed-0xff"
 version = "1.0.0"
 
 repositories {
@@ -28,7 +28,7 @@ gradlePlugin {
     
     plugins {
         create("signing") {
-            id = "me.zed_0xff.zb-gradle-plugin"
+            id = "io.github.zed-0xff.zb-gradle-plugin"
             displayName = "ZB Gradle Plugin"
             description = "JAR signing support for Project Zomboid Java mods (KeychainStore, PKCS12, JKS)"
             tags = listOf("zomboid", "signing", "modding", "jarsigner", "keychain")
