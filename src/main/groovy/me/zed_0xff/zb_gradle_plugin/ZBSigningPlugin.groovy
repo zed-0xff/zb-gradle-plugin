@@ -19,7 +19,7 @@ import java.security.MessageDigest
  * Usage:
  * <pre>
  * plugins {
- *     id 'io.github.zed-0xff.zb-gradle-plugin' version '1.0.0'
+ *     id 'io.github.zed-0xff.zb-gradle-plugin' version '1.0.1'
  * }
  * 
  * zbSigning {

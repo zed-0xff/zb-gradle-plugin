@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "io.github.zed-0xff"
-version = "1.0.0"
+version = "1.0.1"
 
 repositories {
     mavenCentral()
@@ -30,7 +30,7 @@ gradlePlugin {
         create("signing") {
             id = "io.github.zed-0xff.zb-gradle-plugin"
             displayName = "ZB Gradle Plugin"
-            description = "JAR signing support for Project Zomboid Java mods (KeychainStore, PKCS12, JKS)"
+            description = "JAR signing support for Project Zomboid Java mods"
             tags = listOf("zomboid", "signing", "modding", "jarsigner", "keychain")
             implementationClass = "me.zed_0xff.zb_gradle_plugin.ZBSigningPlugin"
         }
