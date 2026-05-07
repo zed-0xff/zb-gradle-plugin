@@ -10,11 +10,11 @@ In the **root** `build.gradle` of the project that produces the JAR you publish:
 
 ```groovy
 plugins {
-    id 'io.github.zed-0xff.zb-gradle-plugin' version '1.0.1'
+    id 'io.github.zed-0xff.zb-gradle-plugin' version '1.0.2'
 }
 ```
 
-Use the latest version from the [Gradle Plugin Portal](https://plugins.gradle.org/plugin/io.github.zed-0xff.zb-gradle-plugin) if it is newer than `1.0.1`.
+Use the latest version from the [Gradle Plugin Portal](https://plugins.gradle.org/plugin/io.github.zed-0xff.zb-gradle-plugin) if it is newer than `1.0.2`.
 
 ---
 
