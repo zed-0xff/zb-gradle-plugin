@@ -78,9 +78,7 @@ class ZBSigningPlugin implements Plugin<Project> {
             dependsOn jarTask
             
             inputs.file(jarTask.archiveFile)
-            outputs.file(project.layout.buildDirectory.file(
-                jarTask.archiveFile.get().asFile.name + '.zbs'
-            ))
+            outputs.file(jarTask.archiveFile.map { new File(it.asFile.parentFile, it.asFile.name + '.zbs') })
             
             doLast {
                 // Use captured values instead of accessing project
