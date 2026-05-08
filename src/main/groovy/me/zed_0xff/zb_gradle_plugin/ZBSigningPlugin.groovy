@@ -3,6 +3,7 @@ package me.zed_0xff.zb_gradle_plugin
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.logging.Logger
+import org.gradle.api.tasks.compile.JavaCompile
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo
 import org.bouncycastle.crypto.params.Ed25519PrivateKeyParameters
 import org.bouncycastle.crypto.signers.Ed25519Signer
@@ -37,22 +38,55 @@ class ZBSigningPlugin implements Plugin<Project> {
         def extension = project.extensions.create('zbSigning', ZBSigningExtension)
         
         project.afterEvaluate {
+            configureAnnotationProcessor(project)
+
             if (!extension.enabled.getOrElse(true)) {
                 return
             }
-            
+
             def jarTaskName = resolveJarTaskName(project, extension)
             def jarTask = project.tasks.findByName(jarTaskName)
-            
+
             if (!jarTask) {
                 project.logger.warn("zb-signing: JAR task '${jarTaskName}' not found")
                 return
             }
-            
+
             configureZbsSigning(project, extension, jarTask)
         }
     }
     
+    private void configureAnnotationProcessor(Project project) {
+        def compileOnly = project.configurations.findByName('compileOnly')
+        def annotationProcessor = project.configurations.findByName('annotationProcessor')
+        if (!compileOnly || !annotationProcessor) return
+
+        def zbFiles = []
+        compileOnly.dependencies.each { dep ->
+            if (!(dep instanceof org.gradle.api.artifacts.FileCollectionDependency)) return
+            dep.files.each { file ->
+                if (file.name.contains('ZombieBuddy')) {
+                    zbFiles << file
+                    project.dependencies.add('annotationProcessor', project.files(file))
+                }
+            }
+        }
+
+        if (!zbFiles.empty) {
+            project.tasks.withType(JavaCompile).configureEach { compileTask ->
+                compileTask.doFirst {
+                    if (options.annotationProcessorPath != null && options.annotationProcessorPath.empty) {
+                        project.logger.warn(
+                            "[!] zb-gradle-plugin: annotation processing is disabled for '${name}' " +
+                            "(options.annotationProcessorPath = files()). " +
+                            "This may result in invalid patches."
+                        )
+                    }
+                }
+            }
+        }
+    }
+
     private void configureZbsSigning(Project project, ZBSigningExtension ext, jarTask) {
         // Capture all values at configuration time
         def steamId = ext.steamId.orNull ?: project.findProperty('zbsSteamID64')
