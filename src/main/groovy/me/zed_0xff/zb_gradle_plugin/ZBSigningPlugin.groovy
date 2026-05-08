@@ -75,6 +75,9 @@ class ZBSigningPlugin implements Plugin<Project> {
         if (!zbFiles.empty) {
             project.tasks.withType(JavaCompile).configureEach { compileTask ->
                 compileTask.doFirst {
+                    // Skip test compile tasks: their annotationProcessorPath is wired from the
+                    // empty testAnnotationProcessor config, not from an explicit files() override.
+                    if (name.toLowerCase().contains('test')) return
                     if (options.annotationProcessorPath != null && options.annotationProcessorPath.empty) {
                         project.logger.warn(
                             "[!] zb-gradle-plugin: annotation processing is disabled for '${name}' " +
